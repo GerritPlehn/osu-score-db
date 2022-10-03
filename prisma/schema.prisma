@@ -42,3 +42,31 @@ model Mod {
   name   String  @unique
   scores Score[]
 }
+
+model PlayerStatistics {
+  id                     String    @id @default(uuid()) @db.Uuid
+  playerId               String?   @map("playerid") @db.VarChar
+  beatmapsPlayed         Int?      @map("beatmap_playcounts_count")
+  followerCount          Int?      @map("follower_count")
+  level                  Decimal?  @db.Decimal(5, 2)
+  globalRank             Int?      @map("global_rank")
+  pp                     Decimal?  @db.Decimal(7, 2)
+  rankedScore            BigInt?   @map("ranked_score")
+  hitAccuracy            Decimal?  @map("hit_accuracy") @db.Decimal(7, 4)
+  playCount              Int?      @map("play_count")
+  playTime               Int?      @map("play_time")
+  totalScore             BigInt?   @map("total_score")
+  totalHits              Int?      @map("total_hits")
+  maximumCombo           Int?      @map("maximum_combo") @db.SmallInt
+  replaysWatchedByOthers Int?      @map("replays_watched_by_others")
+  isRanked               Boolean?  @map("is_ranked")
+  gradesSsh              Int?      @map("grades_ssh")
+  gradesSs               Int?      @map("grades_ss")
+  gradesSh               Int?      @map("grades_sh")
+  gradesS                Int?      @map("grades_s")
+  gradesA                Int?      @map("grades_a")
+  countryRank            Int?      @map("country_rank")
+  timestamp              DateTime? @db.Timestamp(0)
+
+  @@map("osustats")
+}
