@@ -8,33 +8,37 @@ datasource db {
 }
 
 model Map {
-  id     Int     @id @default(autoincrement())
-  name   String
-  Scores Score[]
+  id      Int     @id
+  name    String
+  version String
+  Scores  Score[]
 }
 
 model Player {
-  id      Int     @id @default(autoincrement())
+  id      Int     @id
   name    String
-  Scores  Score[]
-  matches Match[]
+  Scores  Score[] @relation("PlayerScores")
+  matches Match[] @relation("PlayerMatches")
 }
 
 model Score {
-  id       Int    @id @default(autoincrement())
-  mapId    Int
-  playerId Int
-  map      Map    @relation(fields: [mapId], references: [id])
-  player   Player @relation(fields: [playerId], references: [id])
-  match    Match  @relation(fields: [matchId], references: [id])
-  matchId  Int
-  mods     Mod[]
+  id        Int    @id @default(autoincrement())
+  mapId     Int
+  playerId  Int
+  score     Int
+  accuracy  Float
+  max_combo Int
+  map       Map    @relation(fields: [mapId], references: [id])
+  player    Player @relation("PlayerScores", fields: [playerId], references: [id])
+  match     Match  @relation("MatchScores", fields: [matchId], references: [id])
+  matchId   Int
+  mods      Mod[]
 }
 
 model Match {
-  id      Int      @id @default(autoincrement())
-  players Player[]
-  scores  Score[]
+  id      Int      @id
+  players Player[] @relation("PlayerMatches")
+  scores  Score[]  @relation("MatchScores")
 }
 
 model Mod {
