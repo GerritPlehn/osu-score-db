@@ -4,7 +4,7 @@ import { createZodFetcher } from "zod-fetch";
 const zFetch = createZodFetcher();
 
 import { env } from "./env.js";
-import { type OsuUser, rawMatchSchema } from "./types/Match.js";
+import { type OsuUser, rawMatchSchema } from "./types/osu.js";
 
 const baseUrl = "https://osu.ppy.sh";
 const apiBaseUrl = `${baseUrl}/api/v2`;

@@ -4,7 +4,7 @@ import {
 	type ResultEvent,
 	eventSchema,
 	rawMatchSchema,
-} from "./types/Match";
+} from "./types/osu";
 
 export class Match {
 	matchData: MatchData;
