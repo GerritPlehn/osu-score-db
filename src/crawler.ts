@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Match } from "./Match";
 import { db } from "./db/db";
 import {
@@ -13,7 +13,8 @@ import { OsuAPI } from "./osuAPI";
 
 export async function archiveMatch(matchId: number) {
 	console.log(`Crawling match ${matchId}`);
-	if (await isMatchCrawled(matchId)) {
+	const matchDB = await getMatchFromDB(matchId);
+	if (matchDB && matchDB.processingStatus === "done") {
 		console.log(`Match ${matchId} already crawled`);
 		return;
 	}
@@ -23,13 +24,18 @@ export async function archiveMatch(matchId: number) {
 	console.log(`Match ${matchId} archived successfully`);
 }
 
-async function isMatchCrawled(matchId: number) {
+export async function isMatchCrawled(matchId: number) {
 	console.log(`Checking if match ${matchId} is crawled`);
+	const match = await getMatchFromDB(matchId);
+	console.log(`Match ${matchId} is ${match ? "" : "not "}crawled`);
+	return !!match;
+}
+
+export async function getMatchFromDB(matchId: number) {
 	const match = await db.query.matches.findFirst({
 		where: (matches, { eq }) => eq(matches.id, matchId),
 	});
-	console.log(`Match ${matchId} is ${match ? "" : "not "}crawled`);
-	return !!match;
+	return match;
 }
 
 async function getMatchFromAPI(matchId: number) {
@@ -71,13 +77,17 @@ export async function saveMatchToDB(match: Match) {
 		throw new Error("Match is not finished yet, cannot save to DB");
 	}
 	console.log(`Saving match ${match.matchData.match.id} to DB`);
-	await db.insert(matchTable).values({
-		id: matchData.match.id,
-		startTime: matchData.match.start_time,
-		endTime: matchData.match.end_time,
-		name: matchData.match.name,
-		rawData: matchData,
-	});
+	await db
+		.update(matchTable)
+		.set({
+			startTime: matchData.match.start_time,
+			endTime: matchData.match.end_time,
+			name: matchData.match.name,
+			rawData: matchData,
+			processedAt: new Date(),
+			processingStatus: "done",
+		})
+		.where(eq(matchTable.id, matchData.match.id));
 	console.log(`Saved match ${match.matchData.match.id} to DB`);
 	await saveScoresToDB(
 		match.scores.map((score) => {

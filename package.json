@@ -12,10 +12,12 @@
 		"check": "biome check --apply ."
 	},
 	"dependencies": {
+		"@bull-board/hono": "^5.20.5",
 		"@t3-oss/env-core": "^0.10.1",
 		"bottleneck": "^2.19.5",
 		"bullmq": "^5.8.4",
 		"drizzle-orm": "^0.31.2",
+		"hono": "^4.4.12",
 		"postgres": "^3.4.4",
 		"zod": "^3.23.8",
 		"zod-fetch": "^0.1.1"

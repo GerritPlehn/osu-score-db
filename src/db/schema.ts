@@ -3,6 +3,7 @@ import {
 	integer,
 	jsonb,
 	numeric,
+	pgEnum,
 	pgSchema,
 	serial,
 	text,
@@ -23,10 +24,14 @@ export const mapRelations = relations(maps, ({ many }) => ({
 
 export const matches = schema.table("match", {
 	id: serial("id").primaryKey(),
-	startTime: timestamp("start_time").notNull(),
-	endTime: timestamp("end_time").notNull(),
-	name: text("name").notNull(),
-	rawData: jsonb("raw_data").notNull(),
+	startTime: timestamp("start_time"),
+	endTime: timestamp("end_time"),
+	name: text("name"),
+	rawData: jsonb("raw_data"),
+	processingStatus: text("processing_status", {
+		enum: ["queued", "failed", "done"],
+	}),
+	processedAt: timestamp("processed_at"),
 });
 
 export const matchRelations = relations(matches, ({ many }) => ({
