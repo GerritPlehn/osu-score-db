@@ -10,6 +10,8 @@ export const env = createEnv({
 		OSU_CLIENT_ID: z.string(),
 		OSU_CLIENT_SECRET: z.string(),
 		OSU_ACCESS_TOKEN: z.string().optional(),
+		REDIS_HOST: z.string().default("localhost"),
+		REDIS_PORT: z.coerce.number().default(6379),
 	},
 
 	/**

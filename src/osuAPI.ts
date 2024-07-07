@@ -1,10 +1,29 @@
+import Bottleneck from "bottleneck";
 import { z } from "zod";
-import { createZodFetcher } from "zod-fetch";
-
-const zFetch = createZodFetcher();
-
 import { env } from "./env.js";
-import { type OsuUser, rawMatchSchema } from "./types/osu.js";
+
+const limiter = new Bottleneck({
+	minTime: 1000, // 1 request per second
+	maxConcurrent: 1,
+	id: "osu-api",
+	datastore: "ioredis",
+	clearDatastore: false,
+	clientOptions: {
+		host: env.REDIS_HOST,
+		port: env.REDIS_PORT,
+	},
+});
+
+async function zFetch<T extends z.ZodTypeAny>(
+	schema: T,
+	...params: Parameters<typeof fetch>
+) {
+	const response = await limiter.schedule(() => fetch(...params));
+	if (!response.ok) {
+		throw new Error(`Request failed: ${response.statusText}`);
+	}
+	return schema.parse(await response.json()) as z.infer<T>;
+}
 
 const baseUrl = "https://osu.ppy.sh";
 const apiBaseUrl = `${baseUrl}/api/v2`;
