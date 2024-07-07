@@ -41,6 +41,7 @@ export class OsuAPI {
 	private expiresIn = 0;
 	private readonly clientId: string;
 	private readonly clientSecret: string;
+	private headers = new Headers();
 
 	private constructor(clientId: string, clientSecret: string) {
 		this.clientId = clientId;
@@ -63,16 +64,12 @@ export class OsuAPI {
 	private async initialize() {
 		console.log("Getting initial token");
 		if (!env.OSU_ACCESS_TOKEN) {
-			const initialTokenResponse = await this.getToken();
-			this.accessToken = initialTokenResponse.access_token;
-			this.expiresIn = initialTokenResponse.expires_in;
+			await this.doTokenRefresh();
 		} else {
 			this.accessToken = env.OSU_ACCESS_TOKEN;
+			this.headers.set("Authorization", `Bearer ${this.accessToken}`);
 			this.expiresIn = 86400;
 		}
-
-		// Schedule token refresh
-		this.scheduleTokenRefresh();
 	}
 
 	private async getToken() {
@@ -91,16 +88,15 @@ export class OsuAPI {
 			method: "POST",
 		});
 		console.log("Got token");
-		console.log(response);
 		return response;
 	}
 
 	private async doTokenRefresh() {
-		// Get a new token
 		console.log("Refreshing token");
 		const refreshResponse = await this.getToken();
 		this.accessToken = refreshResponse.access_token;
 		this.expiresIn = refreshResponse.expires_in;
+		this.headers.set("Authorization", `Bearer ${this.accessToken}`);
 
 		this.scheduleTokenRefresh();
 		console.log("Token refreshed");
@@ -109,7 +105,7 @@ export class OsuAPI {
 	private scheduleTokenRefresh() {
 		// Calculate the time in milliseconds to wait before refreshing the token
 		const refreshDelay = (this.expiresIn - 60) * 1000; // Refresh 1 minute before expiration
-		console.log(`Scheduling token refresh in${refreshDelay}ms`);
+		console.log(`Scheduling token refresh in ${refreshDelay}ms`);
 		// Schedule the token refresh
 		setTimeout(() => this.doTokenRefresh(), refreshDelay);
 	}
@@ -128,7 +124,7 @@ export class OsuAPI {
 				rawMatchSchema,
 				`${apiBaseUrl}/matches/${matchId}?${params.toString()}`,
 				{
-					headers: { Authorization: `Bearer ${this.accessToken}` },
+					headers: this.headers,
 				},
 			);
 			events.push(...matchPage.events);
