@@ -181,3 +181,19 @@ export const rawMatchSchema = matchSchema.extend({
 		.passthrough()
 		.array(),
 });
+export const beatmapExtendedSchema = z.object({
+	accuracy: z.number(),
+	ar: z.number(),
+	bpm: z.number().optional(),
+	cs: z.number(),
+	drain: z.number(),
+	hit_length: z.number(),
+	version: z.string(),
+	beatmapset: z.object({
+		id: z.number(),
+		title: z.string(),
+		title_unicode: z.string(),
+		artist: z.string(),
+		artist_unicode: z.string(),
+	}),
+});

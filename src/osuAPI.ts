@@ -1,6 +1,11 @@
 import Bottleneck from "bottleneck";
 import { z } from "zod";
-import { env } from "./env.js";
+import { env } from "./env";
+import {
+	type OsuUser,
+	beatmapExtendedSchema,
+	rawMatchSchema,
+} from "./types/osu";
 
 const limiter = new Bottleneck({
 	minTime: 1000, // 1 request per second
@@ -141,7 +146,17 @@ export class OsuAPI {
 	};
 
 	public getMap = async (mapId: number) => {
-		// TODO: implement properly
-		return { id: mapId, name: "Test Map", version: "1" };
+		const beatmap = await zFetch(
+			beatmapExtendedSchema,
+			`${apiBaseUrl}/beatmaps/${mapId}`,
+			{
+				headers: this.headers,
+			},
+		);
+		return {
+			id: mapId,
+			name: beatmap.beatmapset.title,
+			version: beatmap.version,
+		};
 	};
 }

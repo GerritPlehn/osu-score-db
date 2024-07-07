@@ -50,8 +50,14 @@ async function getMapFromAPI(mapId: number) {
 		env.OSU_CLIENT_ID,
 		env.OSU_CLIENT_SECRET,
 	);
-	const map = await api.getMap(mapId);
-	console.log(`Map ${mapId} retrieved successfully`);
+	// fallback to deleted map if map is not found
+	let map = { id: mapId, name: "deleted", version: "deleted" };
+	try {
+		map = await api.getMap(mapId);
+		console.log(`Map ${mapId} retrieved successfully`);
+	} catch (error) {
+		console.warn(`Map ${mapId} not found, using fallback`);
+	}
 	return map;
 }
 
@@ -107,8 +113,16 @@ async function saveUsersToDB(users: GenericRecord[]) {
 
 async function saveMapsToDB(maps: OsuMap[]) {
 	console.log(`Saving ${maps.length} maps to DB`);
-	// TODO: onConflictDoUpdate
-	await db.insert(mapTable).values(maps).onConflictDoNothing();
+	await db
+		.insert(mapTable)
+		.values(maps)
+		.onConflictDoUpdate({
+			target: mapTable.id,
+			set: {
+				name: sql.raw(`excluded.${mapTable.name.name}`),
+				version: sql.raw(`excluded.${mapTable.version.name}`),
+			},
+		});
 	console.log(`Saved ${maps.length} maps to DB`);
 }
 
